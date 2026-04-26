@@ -1,16 +1,48 @@
-# React + Vite
+# 🍎 Lillo - Gestión Integral de Verdulería
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema de gestión profesional diseñado para optimizar las operaciones de una verdulería, abarcando desde la venta al público y el punto de venta (POS) hasta el control de inventario y el balance financiero.
 
-Currently, two official plugins are available:
+## 🚀 Stack Tecnológico
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+El proyecto utiliza un stack moderno y escalable (PERN Stack) para garantizar un rendimiento óptimo:
 
-## React Compiler
+### Frontend
+- **React.js + Vite**: Para una experiencia de desarrollo rápida y una interfaz reactiva.
+- **Tailwind CSS**: Para un diseño estilizado, responsivo y basado en los mockups.
+- **Deployment**: [Vercel](https://vercel.com/)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Backend & Base de Datos
+- **Node.js & Express**: Servidor robusto para la lógica de negocio.
+- **Prisma ORM**: Para un modelado de datos type-safe y migraciones sencillas.
+- **PostgreSQL**: Base de datos relacional para la integridad de la información.
+- **Hosting/BaaS**: [Supabase](https://supabase.com/) (Base de datos y despliegue del backend).
 
-## Expanding the ESLint configuration
+## 📂 Estructura del Proyecto (Frontend)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Siguiendo una arquitectura basada en **Features**, el proyecto se organiza de la siguiente manera:
+
+```text
+src/
+├── assets/           # Recursos estáticos (Logos, Iconos)
+├── components/       # Componentes de UI atómicos (common, layout)
+├── context/          # Manejo de estado global (Carrito, Auth)
+├── features/         # Módulos de negocio (Shop, Inventory, POS, Finance)
+│   ├── shop/         # Catálogo para el cliente
+│   ├── inventory/    # Gestión de stock y precios
+│   ├── pos/          # Punto de venta rápido
+│   └── finance/      # Balances y reportes
+├── hooks/            # Lógica extraída y reutilizable
+├── services/         # Integración con la API y servicios externos
+├── utils/            # Funciones de ayuda y formateo
+└── pages/            # Enrutado principal (React Router)
+
+## ✨ Características Principales
+Cesta de Frescura: Interfaz para clientes con catálogo de productos y categorías.
+
+Punto de Venta (POS): Registro rápido de ventas en el local con calculadora de peso y precio.
+
+Gestión de Inventario: Control de stock en tiempo real, carga de productos y actualización masiva de precios.
+
+Módulo de Finanzas: Resúmenes diarios y anuales con gráficos de ingresos.
+
+WhatsApp Integration: Envío automático de resúmenes de pedido desde la cesta al vendedor.
