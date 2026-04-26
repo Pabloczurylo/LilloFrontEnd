@@ -44,5 +44,3 @@ Punto de Venta (POS): Registro rápido de ventas en el local con calculadora de 
 Gestión de Inventario: Control de stock en tiempo real, carga de productos y actualización masiva de precios.
 
 Módulo de Finanzas: Resúmenes diarios y anuales con gráficos de ingresos.
-
-WhatsApp Integration: Envío automático de resúmenes de pedido desde la cesta al vendedor.
