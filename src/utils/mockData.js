@@ -15,7 +15,7 @@ export const mockProducts = [
     price: 3200,
     category: 'Panadería',
     unit: 'UN',
-    imageUrl: 'https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=800&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80'
   },
   {
     id: 3,
@@ -42,7 +42,7 @@ export const mockProducts = [
     price: 5200,
     category: 'Almacén',
     unit: 'UN',
-    imageUrl: 'https://images.unsplash.com/photo-1587049352847-4d4b1ed74681?w=800&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800&q=80'
   },
   {
     id: 6,
@@ -60,7 +60,7 @@ export const mockProducts = [
     price: 2100,
     category: 'Frutas',
     unit: 'KG',
-    imageUrl: 'https://images.unsplash.com/photo-1611080632781-be616bf8a081?w=800&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=800&q=80'
   },
   {
     id: 8,
