@@ -61,6 +61,11 @@ body {
   margin: 0 auto;
   min-height: 100svh;
   text-align: left;
+
+  @media (min-width: 1024px) {
+    max-width: 100%;
+    margin: 0;
+  }
 }
 
 h1,

@@ -10,13 +10,17 @@ import { ChevronDown } from 'lucide-react';
  * InventoryPage – Main container for the Inventory feature.
  * Manages search filtering, view toggling (list ↔ new-product form),
  * and renders the full product list using mockData.
+ *
+ * Responsive layout:
+ *  - Mobile  (<1024px): single-column list, full-screen form.
+ *  - Desktop (≥1024px): 2-column product grid, centered card form.
  */
 export default function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [visibleCount, setVisibleCount] = useState(4);
 
-  /** Filter products by name or category based on search query */
+  /** Filter products by name, category or ref based on search query */
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return mockProducts;
     const q = searchQuery.toLowerCase();
@@ -48,18 +52,24 @@ export default function InventoryPage() {
   /* ---- Form view ---- */
   if (showForm) {
     return (
-      <div className="min-h-screen bg-[#faf8f5]">
-        <NewProductForm
-          onSave={handleSaveNewProduct}
-          onCancel={() => setShowForm(false)}
-        />
+      /*
+       * Mobile : pantalla completa con bg-[#faf8f5]
+       * Desktop: bg oscuro semitransparente + formulario centrado como card
+       */
+      <div className="min-h-screen bg-[#faf8f5] lg:bg-stone-200/60 lg:flex lg:items-start lg:justify-center lg:py-10 lg:px-8">
+        <div className="lg:w-full lg:max-w-lg lg:rounded-3xl lg:overflow-hidden lg:shadow-xl lg:border lg:border-stone-200">
+          <NewProductForm
+            onSave={handleSaveNewProduct}
+            onCancel={() => setShowForm(false)}
+          />
+        </div>
       </div>
     );
   }
 
   /* ---- List view ---- */
   return (
-    <div className="min-h-screen bg-[#faf8f5] px-5 py-6 flex flex-col gap-6">
+    <div className="min-h-screen px-5 py-6 flex flex-col gap-6 lg:px-8 lg:py-8">
       <InventoryHeader
         onAddProduct={() => setShowForm(true)}
         onImport={() => console.log('Import price list')}
@@ -70,8 +80,11 @@ export default function InventoryPage() {
         onSearchChange={setSearchQuery}
       />
 
-      {/* Product list */}
-      <section className="flex flex-col gap-4" aria-label="Lista de productos">
+      {/* Product list / grid */}
+      <section
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+        aria-label="Lista de productos"
+      >
         {visibleProducts.length > 0 ? (
           visibleProducts.map((product) => (
             <ProductCard
@@ -82,7 +95,7 @@ export default function InventoryPage() {
             />
           ))
         ) : (
-          <div className="text-center py-12">
+          <div className="col-span-full text-center py-12">
             <p className="text-stone-400 text-sm">
               No se encontraron productos que coincidan con tu búsqueda.
             </p>
