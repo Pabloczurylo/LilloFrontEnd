@@ -2,42 +2,55 @@ import { NavLink } from 'react-router-dom';
 import {
   Package,
   ShoppingCart,
-  TrendingUp,
   DollarSign,
   Store,
   Leaf,
+  Trash2,
+  X,
 } from 'lucide-react';
 
 /**
- * Sidebar – Lateral navigation panel, visible only on desktop (≥1024px).
- * Usa NavLink de react-router-dom para resaltar la sección activa.
+ * Sidebar – Lateral navigation panel.
+ *
+ * Modes:
+ *  - Desktop (default): hidden on mobile, flex on ≥1024px, sticky full-height.
+ *  - Mobile drawer (isMobileDrawer=true): always flex, full-height, no hidden class.
+ *    AppShell handles the slide-in animation via transform classes.
+ *
+ * Props:
+ *  - isMobileDrawer: render as drawer panel (no lg:flex trick needed)
+ *  - onClose: called when the user clicks the × button inside the drawer
  */
 
 const NAV_ITEMS = [
-  { to: '/inventario', icon: Package,      label: 'Inventario',  enabled: true },
-  { to: '/ventas',     icon: ShoppingCart, label: 'Ventas',       enabled: false },
-  { to: '/reportes',   icon: DollarSign,   label: 'Finanzas',     enabled: true },
-  { to: '/ajustes',    icon: Store,        label: 'Tienda',       enabled: false },
+  { to: '/inventario', icon: Package,      label: 'Inventario', enabled: true },
+  { to: '/mermas',     icon: Trash2,       label: 'Mermas',     enabled: true },
+  { to: '/ventas',     icon: ShoppingCart, label: 'Ventas',     enabled: false },
+  { to: '/reportes',   icon: DollarSign,   label: 'Finanzas',   enabled: true },
+  { to: '/ajustes',    icon: Store,        label: 'Tienda',     enabled: false },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isMobileDrawer = false, onClose }) {
   return (
     <aside
-      id="sidebar"
-      className="hidden lg:flex flex-col w-64 shrink-0 min-h-screen
-                 bg-white border-r border-stone-100 sticky top-0 self-start"
-      style={{ height: '100vh' }}
+      id={isMobileDrawer ? 'sidebar-drawer' : 'sidebar'}
+      className={`flex flex-col w-64 shrink-0 bg-white border-r border-stone-100
+                  ${isMobileDrawer
+                    ? 'h-full overflow-y-auto'
+                    : 'hidden lg:flex min-h-screen sticky top-0 self-start'
+                  }`}
+      style={isMobileDrawer ? undefined : { height: '100vh' }}
     >
       {/* ── Branding ── */}
       <div className="px-6 pt-7 pb-6 border-b border-stone-100">
         <div className="flex items-center gap-2.5">
           <div
             className="w-9 h-9 rounded-xl bg-green-900 flex items-center
-                       justify-center shadow-sm"
+                       justify-center shadow-sm shrink-0"
           >
             <Leaf size={18} className="text-white" strokeWidth={2} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-base font-extrabold text-stone-900 leading-none">
               Lillo
             </p>
@@ -46,17 +59,36 @@ export default function Sidebar() {
               Gestión de Stock
             </p>
           </div>
+
+          {/* Close button – only in drawer mode */}
+          {isMobileDrawer && (
+            <button
+              id="drawer-close-btn"
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar menú"
+              className="w-8 h-8 flex items-center justify-center rounded-xl
+                         text-stone-500 hover:bg-stone-100 hover:text-stone-700
+                         transition-colors cursor-pointer shrink-0"
+            >
+              <X size={18} strokeWidth={2} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* ── Navigation ── */}
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1" aria-label="Navegación principal">
+      <nav
+        className="flex-1 px-3 py-4 flex flex-col gap-1"
+        aria-label="Navegación principal"
+      >
         {NAV_ITEMS.map(({ to, icon: Icon, label, enabled }) =>
           enabled ? (
             <NavLink
               key={to}
               to={to}
               id={`nav-${label.toLowerCase()}`}
+              onClick={isMobileDrawer ? onClose : undefined}
               className={({ isActive }) =>
                 `flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm
                  font-medium transition-all text-left cursor-pointer no-underline

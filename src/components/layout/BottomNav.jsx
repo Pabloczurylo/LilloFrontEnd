@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ShoppingCart, Package, BarChart2, Settings } from 'lucide-react';
+import { ShoppingCart, Package, BarChart2, Settings, Trash2 } from 'lucide-react';
 
 /**
  * BottomNav – Tab bar de navegación inferior, visible solo en mobile (<1024px).
@@ -7,8 +7,8 @@ import { ShoppingCart, Package, BarChart2, Settings } from 'lucide-react';
  */
 
 const TABS = [
-  { to: '/ventas',     icon: ShoppingCart, label: 'Ventas' },
   { to: '/inventario', icon: Package,      label: 'Inventario' },
+  { to: '/mermas',     icon: Trash2,       label: 'Mermas' },
   { to: '/reportes',   icon: BarChart2,    label: 'Reportes' },
   { to: '/ajustes',    icon: Settings,     label: 'Ajustes' },
 ];

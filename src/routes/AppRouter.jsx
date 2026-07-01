@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { InventoryPage } from '../features/inventory';
 import { FinanceDashboardPage } from '../features/finance';
+import { LossPage } from '../features/losses';
 
 /**
  * AppRouter – Centraliza todas las rutas de la aplicación.
@@ -8,6 +9,7 @@ import { FinanceDashboardPage } from '../features/finance';
  * Rutas activas:
  *   /inventario  → InventoryPage
  *   /reportes    → FinanceDashboardPage
+ *   /mermas      → LossPage
  *   /            → redirect a /reportes (dashboard como home)
  *
  * Rutas placeholder (próximamente):
@@ -24,6 +26,9 @@ export default function AppRouter() {
 
       {/* Finanzas / Reportes */}
       <Route path="/reportes" element={<FinanceDashboardPage />} />
+
+      {/* Mermas – Registro de pérdidas por mal estado */}
+      <Route path="/mermas" element={<LossPage />} />
 
       {/* Placeholders – redirigen al dashboard hasta que se implementen */}
       <Route path="/ventas"   element={<Navigate to="/reportes" replace />} />
