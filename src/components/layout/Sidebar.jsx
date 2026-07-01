@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import {
   Package,
   ShoppingCart,
@@ -9,16 +10,14 @@ import {
 
 /**
  * Sidebar – Lateral navigation panel, visible only on desktop (≥1024px).
- * Each nav item has an icon, label and active state.
- * Placeholder items for future sections are rendered with reduced opacity.
+ * Usa NavLink de react-router-dom para resaltar la sección activa.
  */
 
 const NAV_ITEMS = [
-  { id: 'inventory', icon: Package, label: 'Inventario', active: true },
-  { id: 'pos', icon: ShoppingCart, label: 'POS', active: false },
-  { id: 'sales', icon: TrendingUp, label: 'Ventas', active: false },
-  { id: 'finance', icon: DollarSign, label: 'Finanzas', active: false },
-  { id: 'shop', icon: Store, label: 'Tienda', active: false },
+  { to: '/inventario', icon: Package,      label: 'Inventario',  enabled: true },
+  { to: '/ventas',     icon: ShoppingCart, label: 'Ventas',       enabled: false },
+  { to: '/reportes',   icon: DollarSign,   label: 'Finanzas',     enabled: true },
+  { to: '/ajustes',    icon: Store,        label: 'Tienda',       enabled: false },
 ];
 
 export default function Sidebar() {
@@ -52,44 +51,54 @@ export default function Sidebar() {
 
       {/* ── Navigation ── */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1" aria-label="Navegación principal">
-        {NAV_ITEMS.map(({ id, icon: Icon, label, active }) => (
-          <button
-            key={id}
-            id={`nav-${id}`}
-            type="button"
-            disabled={!active}
-            className={`
-              flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm
-              font-medium transition-all text-left cursor-pointer
-              ${
-                active
-                  ? 'bg-green-50 text-green-900'
-                  : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 opacity-60'
+        {NAV_ITEMS.map(({ to, icon: Icon, label, enabled }) =>
+          enabled ? (
+            <NavLink
+              key={to}
+              to={to}
+              id={`nav-${label.toLowerCase()}`}
+              className={({ isActive }) =>
+                `flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm
+                 font-medium transition-all text-left cursor-pointer no-underline
+                 ${
+                   isActive
+                     ? 'bg-green-50 text-green-900'
+                     : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+                 }`
               }
-            `}
-            aria-current={active ? 'page' : undefined}
-          >
-            {/* Active indicator bar */}
-            <span
-              className={`
-                w-1 h-5 rounded-full shrink-0 transition-all
-                ${active ? 'bg-green-900' : 'bg-transparent'}
-              `}
-            />
-            <Icon size={18} strokeWidth={active ? 2 : 1.5} />
-            <span>{label}</span>
-
-            {/* "Coming soon" badge for placeholders */}
-            {!active && (
+            >
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={`w-1 h-5 rounded-full shrink-0 transition-all
+                                ${isActive ? 'bg-green-900' : 'bg-transparent'}`}
+                  />
+                  <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
+                  <span>{label}</span>
+                </>
+              )}
+            </NavLink>
+          ) : (
+            <button
+              key={to}
+              id={`nav-${label.toLowerCase()}`}
+              type="button"
+              disabled
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm
+                         font-medium text-stone-400 opacity-50 cursor-not-allowed text-left"
+            >
+              <span className="w-1 h-5 rounded-full shrink-0 bg-transparent" />
+              <Icon size={18} strokeWidth={1.5} />
+              <span>{label}</span>
               <span
                 className="ml-auto text-[9px] font-bold uppercase tracking-wider
                            px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-400"
               >
                 pronto
               </span>
-            )}
-          </button>
-        ))}
+            </button>
+          )
+        )}
       </nav>
 
       {/* ── Footer ── */}
