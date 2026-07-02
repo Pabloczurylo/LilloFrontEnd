@@ -9,6 +9,7 @@ import {
   X,
   Tag,
   BadgePercent,
+  ShoppingBag,
 } from 'lucide-react';
 
 /**
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { to: '/inventario',    icon: Package,      label: 'Inventario',  enabled: true },
   { to: '/mermas',        icon: Trash2,       label: 'Mermas',      enabled: true },
   { to: '/ventas',        icon: ShoppingCart, label: 'Ventas',      enabled: true },
+  { to: '/pedido',        icon: ShoppingBag,  label: 'Pedido',      enabled: true },
   { to: '/ofertas',       icon: Tag,          label: 'Ofertas',     enabled: true },
   { to: '/reportes',      icon: DollarSign,   label: 'Finanzas',    enabled: true },
   { to: '/ajustes',       icon: Store,        label: 'Tienda',      enabled: false },
