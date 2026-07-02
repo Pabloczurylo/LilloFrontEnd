@@ -1,62 +1,140 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+// Layouts
+import AppShell from '../components/layout/AppShell';
+import ClientShell from '../components/layout/ClientShell';
+
+// Auth
+import { LoginPage, ProtectedRoute } from '../features/auth';
+
+// Admin features
 import { InventoryPage } from '../features/inventory';
 import { FinanceDashboardPage } from '../features/finance';
 import { LossPage } from '../features/losses';
 import { SalesPage } from '../features/sales';
-import { OffersPage, AdminPromosPage } from '../features/promotions';
+import { AdminPromosPage } from '../features/promotions';
+
+// Shared / Cliente features
+import { OffersPage } from '../features/promotions';
 import { ShopPage } from '../features/shop';
 import { CartPage } from '../features/cart';
 
 /**
- * AppRouter – Centraliza todas las rutas de la aplicación.
+ * AppRouter – Centraliza todas las rutas con RBAC.
  *
- * Rutas activas:
- *   /inventario       → InventoryPage
- *   /reportes         → FinanceDashboardPage
- *   /mermas           → LossPage
- *   /ventas           → SalesPage
- *   /ofertas          → OffersPage       (vista cliente promociones)
- *   /admin/ofertas    → AdminPromosPage  (vista admin)
- *   /pedido           → ShopPage         (catálogo de pedido cliente)
- *   /pedido/resumen   → CartPage         (resumen + envío WhatsApp)
- *   /                 → redirect a /reportes (dashboard como home)
+ * Rutas PÚBLICAS (cliente, sin autenticación):
+ *   /login            → LoginPage        (sin shell)
+ *   /pedido           → ShopPage         (ClientShell)
+ *   /pedido/resumen   → CartPage         (ClientShell)
+ *   /ofertas          → OffersPage       (ClientShell)
+ *
+ * Rutas PROTEGIDAS (solo admin autenticado):
+ *   /inventario       → InventoryPage    (AppShell)
+ *   /reportes         → FinanceDashboard (AppShell)
+ *   /mermas           → LossPage         (AppShell)
+ *   /ventas           → SalesPage        (AppShell)
+ *   /admin/ofertas    → AdminPromosPage  (AppShell)
+ *
+ * Ruta raíz (/):
+ *   - Si admin  → /reportes
+ *   - Si cliente → /pedido
  */
+function RootRedirect() {
+  const { isAdmin } = useAuth();
+  return <Navigate to={isAdmin ? '/reportes' : '/pedido'} replace />;
+}
+
 export default function AppRouter() {
   return (
     <Routes>
-      {/* Default redirect → dashboard de finanzas como home */}
-      <Route path="/" element={<Navigate to="/reportes" replace />} />
 
-      {/* Inventario */}
-      <Route path="/inventario" element={<InventoryPage />} />
+      {/* ── Login (sin shell) ── */}
+      <Route path="/login" element={<LoginPage />} />
 
-      {/* Finanzas / Reportes */}
-      <Route path="/reportes" element={<FinanceDashboardPage />} />
+      {/* ── Rutas públicas de cliente ── */}
+      <Route
+        path="/pedido"
+        element={
+          <ClientShell>
+            <ShopPage />
+          </ClientShell>
+        }
+      />
+      <Route
+        path="/pedido/resumen"
+        element={
+          <ClientShell>
+            <CartPage />
+          </ClientShell>
+        }
+      />
+      <Route
+        path="/ofertas"
+        element={
+          <ClientShell>
+            <OffersPage />
+          </ClientShell>
+        }
+      />
 
-      {/* Mermas – Registro de pérdidas por mal estado */}
-      <Route path="/mermas" element={<LossPage />} />
+      {/* ── Rutas protegidas (admin) ── */}
+      <Route
+        path="/inventario"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <InventoryPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reportes"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <FinanceDashboardPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mermas"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <LossPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ventas"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <SalesPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/ofertas"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <AdminPromosPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
 
-      {/* Ventas – Registro de ventas y canasta */}
-      <Route path="/ventas" element={<SalesPage />} />
+      {/* ── Redirect raíz ── */}
+      <Route path="/" element={<RootRedirect />} />
 
-      {/* Ofertas – Vista de cliente con promociones activas */}
-      <Route path="/ofertas" element={<OffersPage />} />
-
-      {/* Admin – Panel de gestión de promociones */}
-      <Route path="/admin/ofertas" element={<AdminPromosPage />} />
-
-      {/* Pedido – Catálogo para armar pedido por WhatsApp */}
-      <Route path="/pedido" element={<ShopPage />} />
-
-      {/* Pedido Resumen – Revisión y envío del pedido por WhatsApp */}
-      <Route path="/pedido/resumen" element={<CartPage />} />
-
-      {/* Placeholder – redirige al dashboard hasta que se implemente */}
-      <Route path="/ajustes" element={<Navigate to="/reportes" replace />} />
-
-      {/* 404 fallback */}
-      <Route path="*" element={<Navigate to="/reportes" replace />} />
+      {/* ── 404 fallback ── */}
+      <Route path="*" element={<RootRedirect />} />
     </Routes>
   );
 }
-

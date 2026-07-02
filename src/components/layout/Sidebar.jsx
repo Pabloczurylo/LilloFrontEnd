@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Package,
   ShoppingCart,
@@ -10,7 +10,9 @@ import {
   Tag,
   BadgePercent,
   ShoppingBag,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * Sidebar – Lateral navigation panel.
@@ -40,6 +42,14 @@ const ADMIN_ITEMS = [
 ];
 
 export default function Sidebar({ isMobileDrawer = false, onClose }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+    onClose?.();
+  };
   return (
     <aside
       id={isMobileDrawer ? 'sidebar-drawer' : 'sidebar'}
@@ -84,6 +94,30 @@ export default function Sidebar({ isMobileDrawer = false, onClose }) {
             </button>
           )}
         </div>
+
+        {/* Usuario autenticado */}
+        {user && (
+          <div
+            className="mt-4 flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+            style={{ background: '#f0faf0' }}
+          >
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0
+                         text-white text-[11px] font-extrabold"
+              style={{ background: '#1a5c1a' }}
+            >
+              {user.initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-extrabold text-stone-800 leading-none truncate">
+                {user.name}
+              </p>
+              <p className="text-[10px] text-stone-400 truncate mt-0.5">
+                {user.email}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Navigation ── */}
@@ -176,9 +210,20 @@ export default function Sidebar({ isMobileDrawer = false, onClose }) {
         ))}
       </nav>
 
-      {/* ── Footer ── */}
-      <div className="px-6 py-5 border-t border-stone-100">
-        <p className="text-[10px] text-stone-300 leading-relaxed">
+      {/* ── Footer: usuario + logout ── */}
+      <div className="px-4 py-4 border-t border-stone-100">
+        <button
+          id="sidebar-logout-btn"
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm
+                     font-medium text-stone-500 hover:bg-red-50 hover:text-red-600
+                     transition-all cursor-pointer text-left"
+        >
+          <LogOut size={16} strokeWidth={1.8} />
+          <span>Cerrar sesión</span>
+        </button>
+        <p className="text-[10px] text-stone-300 leading-relaxed mt-2 px-3">
           © 2025 Lillo · v0.1
         </p>
       </div>
