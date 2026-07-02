@@ -7,6 +7,9 @@ import {
   Leaf,
   Trash2,
   X,
+  Tag,
+  BadgePercent,
+  ShoppingBag,
 } from 'lucide-react';
 
 /**
@@ -23,11 +26,17 @@ import {
  */
 
 const NAV_ITEMS = [
-  { to: '/inventario', icon: Package,      label: 'Inventario', enabled: true },
-  { to: '/mermas',     icon: Trash2,       label: 'Mermas',     enabled: true },
-  { to: '/ventas',     icon: ShoppingCart, label: 'Ventas',     enabled: true },
-  { to: '/reportes',   icon: DollarSign,   label: 'Finanzas',   enabled: true },
-  { to: '/ajustes',    icon: Store,        label: 'Tienda',     enabled: false },
+  { to: '/inventario',    icon: Package,      label: 'Inventario',  enabled: true },
+  { to: '/mermas',        icon: Trash2,       label: 'Mermas',      enabled: true },
+  { to: '/ventas',        icon: ShoppingCart, label: 'Ventas',      enabled: true },
+  { to: '/pedido',        icon: ShoppingBag,  label: 'Pedido',      enabled: true },
+  { to: '/ofertas',       icon: Tag,          label: 'Ofertas',     enabled: true },
+  { to: '/reportes',      icon: DollarSign,   label: 'Finanzas',    enabled: true },
+  { to: '/ajustes',       icon: Store,        label: 'Tienda',      enabled: false },
+];
+
+const ADMIN_ITEMS = [
+  { to: '/admin/ofertas', icon: BadgePercent, label: 'Promos Admin', enabled: true },
 ];
 
 export default function Sidebar({ isMobileDrawer = false, onClose }) {
@@ -79,7 +88,7 @@ export default function Sidebar({ isMobileDrawer = false, onClose }) {
 
       {/* ── Navigation ── */}
       <nav
-        className="flex-1 px-3 py-4 flex flex-col gap-1"
+        className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto"
         aria-label="Navegación principal"
       >
         {NAV_ITEMS.map(({ to, icon: Icon, label, enabled }) =>
@@ -131,6 +140,40 @@ export default function Sidebar({ isMobileDrawer = false, onClose }) {
             </button>
           )
         )}
+
+        {/* ── Separador Admin ── */}
+        <div className="mx-2 my-2 border-t border-stone-100" />
+        <p className="px-3 text-[9px] font-extrabold uppercase tracking-widest text-stone-400 mb-1">
+          Admin
+        </p>
+        {ADMIN_ITEMS.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            id={`nav-${label.toLowerCase().replace(' ', '-')}`}
+            onClick={isMobileDrawer ? onClose : undefined}
+            className={({ isActive }) =>
+              `flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm
+               font-medium transition-all text-left cursor-pointer no-underline
+               ${
+                 isActive
+                   ? 'bg-orange-50 text-orange-800'
+                   : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+               }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`w-1 h-5 rounded-full shrink-0 transition-all
+                              ${isActive ? 'bg-orange-500' : 'bg-transparent'}`}
+                />
+                <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
+                <span>{label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
       </nav>
 
       {/* ── Footer ── */}
