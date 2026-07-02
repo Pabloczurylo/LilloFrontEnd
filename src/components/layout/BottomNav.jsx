@@ -9,8 +9,8 @@ import { ShoppingCart, Package, BarChart2, Settings, Trash2 } from 'lucide-react
 const TABS = [
   { to: '/inventario', icon: Package,      label: 'Inventario' },
   { to: '/mermas',     icon: Trash2,       label: 'Mermas' },
+  { to: '/ventas',     icon: ShoppingCart, label: 'Ventas' },
   { to: '/reportes',   icon: BarChart2,    label: 'Reportes' },
-  { to: '/ajustes',    icon: Settings,     label: 'Ajustes' },
 ];
 
 export default function BottomNav() {
