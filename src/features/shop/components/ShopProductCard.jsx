@@ -52,13 +52,13 @@ export default function ShopProductCard({ product }) {
     >
       {/* ── Área imagen ── */}
       <div
-        className="relative w-full flex items-center justify-center"
+        className="relative w-full overflow-hidden"
         style={{ background: cardBg, height: '160px' }}
       >
         {/* Badge tipo */}
         {badge && (
           <div
-            className="absolute top-3 left-3 flex items-center gap-1.5
+            className="absolute top-3 left-3 z-10 flex items-center gap-1.5
                        px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
             style={{ background: badge.bg, color: badge.text }}
           >
@@ -70,16 +70,29 @@ export default function ShopProductCard({ product }) {
           </div>
         )}
 
-        {/* Emoji / imagen */}
-        <span
-          className="select-none"
-          style={{ fontSize: '64px', lineHeight: 1, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.08))' }}
-          role="img"
-          aria-label={product.name}
-        >
-          {product.emoji}
-        </span>
+        {/* Imagen real o emoji fallback */}
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-300
+                       hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span
+              className="select-none"
+              style={{ fontSize: '64px', lineHeight: 1, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.08))' }}
+              role="img"
+              aria-label={product.name}
+            >
+              {product.emoji}
+            </span>
+          </div>
+        )}
       </div>
+
 
       {/* ── Info ── */}
       <div className="px-4 pt-3 pb-4">

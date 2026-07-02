@@ -45,6 +45,7 @@ export const shopProducts = [
     category: 'Verduras',
     badge: 'organico',
     emoji: '🥕',
+    imageUrl: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=600&q=80',
   },
   {
     id: 'sp-002',
@@ -55,6 +56,7 @@ export const shopProducts = [
     category: 'Verduras',
     badge: 'organico',
     emoji: '🍅',
+    imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&q=80',
   },
   {
     id: 'sp-003',
@@ -65,6 +67,7 @@ export const shopProducts = [
     category: 'Verduras',
     badge: 'temporada',
     emoji: '🥬',
+    imageUrl: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=600&q=80',
   },
   {
     id: 'sp-004',
@@ -75,6 +78,7 @@ export const shopProducts = [
     category: 'Verduras',
     badge: 'organico',
     emoji: '🌿',
+    imageUrl: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=600&q=80',
   },
   {
     id: 'sp-005',
@@ -85,6 +89,7 @@ export const shopProducts = [
     category: 'Lácteos',
     badge: 'artesanal',
     emoji: '🧀',
+    imageUrl: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=600&q=80',
   },
   {
     id: 'sp-006',
@@ -95,6 +100,7 @@ export const shopProducts = [
     category: 'Lácteos',
     badge: 'artesanal',
     emoji: '🧀',
+    imageUrl: 'https://images.unsplash.com/photo-1599720840323-bbbb5fc77a69?w=600&q=80',
   },
   {
     id: 'sp-007',
@@ -105,6 +111,7 @@ export const shopProducts = [
     category: 'Panadería',
     badge: 'artesanal',
     emoji: '🍞',
+    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80',
   },
   {
     id: 'sp-008',
@@ -115,6 +122,7 @@ export const shopProducts = [
     category: 'Panadería',
     badge: 'artesanal',
     emoji: '🫓',
+    imageUrl: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=600&q=80',
   },
   {
     id: 'sp-009',
@@ -125,6 +133,7 @@ export const shopProducts = [
     category: 'Frutas',
     badge: 'temporada',
     emoji: '🫐',
+    imageUrl: 'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=600&q=80',
   },
   {
     id: 'sp-010',
@@ -135,6 +144,7 @@ export const shopProducts = [
     category: 'Frutas',
     badge: 'temporada',
     emoji: '🍊',
+    imageUrl: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=600&q=80',
   },
   {
     id: 'sp-011',
@@ -145,6 +155,7 @@ export const shopProducts = [
     category: 'Frutas',
     badge: 'premium',
     emoji: '🥑',
+    imageUrl: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=600&q=80',
   },
   {
     id: 'sp-012',
@@ -155,6 +166,7 @@ export const shopProducts = [
     category: 'Huevos & Almacén',
     badge: 'organico',
     emoji: '🥚',
+    imageUrl: 'https://images.unsplash.com/photo-1587486913049-53fc88980cfc?w=600&q=80',
   },
   {
     id: 'sp-013',
@@ -165,6 +177,7 @@ export const shopProducts = [
     category: 'Huevos & Almacén',
     badge: 'artesanal',
     emoji: '🍯',
+    imageUrl: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=600&q=80',
   },
   {
     id: 'sp-014',
@@ -175,6 +188,7 @@ export const shopProducts = [
     category: 'Carnes & Aves',
     badge: 'premium',
     emoji: '🍗',
+    imageUrl: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=600&q=80',
   },
   {
     id: 'sp-015',
@@ -185,8 +199,10 @@ export const shopProducts = [
     category: 'Carnes & Aves',
     badge: 'local',
     emoji: '🥩',
+    imageUrl: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=600&q=80',
   },
 ];
+
 
 /** Formatea precio en ARS sin decimales */
 export function fmtPrice(n) {
