@@ -1,17 +1,16 @@
-import AppShell from './components/layout/AppShell';
 import AppRouter from './routes/AppRouter';
 
 /**
  * App – Raíz de la aplicación.
- * AppShell provee el layout (sidebar desktop / mobile header + bottom nav).
- * AppRouter define las rutas dentro del shell.
+ *
+ * El shell (AppShell o ClientShell) se aplica dentro de AppRouter
+ * según el rol del usuario:
+ *  - Admin autenticado → AppShell (sidebar completo, nav admin)
+ *  - Cliente / no autenticado → ClientShell (nav simplificado)
+ *  - /login → sin shell
  */
 function App() {
-  return (
-    <AppShell>
-      <AppRouter />
-    </AppShell>
-  );
+  return <AppRouter />;
 }
 
 export default App;
