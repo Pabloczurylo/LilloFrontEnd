@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Flame } from 'lucide-react';
 import { usePromotions } from '../../../context/PromotionsContext';
+import { useCart } from '../../../context/CartContext';
+import { applyDiscount } from '../utils/promotionsMockData';
 import CategoryFilterBar from '../components/CategoryFilterBar';
 import OfferCard from '../components/OfferCard';
 import EmptyOffersState from '../components/EmptyOffersState';
+import CartPreviewBar from '../../shop/components/CartPreviewBar';
 
 /**
  * OffersPage – Vista de cliente: muestra las ofertas activas y vigentes.
@@ -35,9 +38,28 @@ export default function OffersPage() {
     return map;
   }, [activePromotions]);
 
+  const { addItem } = useCart();
+
+  /**
+   * Al agregar desde Ofertas, el producto entra al carrito con el precio
+   * con descuento ya aplicado, de modo que el total del pedido lo refleje.
+   */
   const handleAddToCart = (promo) => {
-    // Placeholder: en producción conectaría con el carrito / venta actual
-    console.log('Agregar al carrito:', promo.product?.name);
+    const { product, discount } = promo;
+    if (!product) return;
+    const discountedPrice = applyDiscount(product.price, discount);
+    addItem({
+      // Usamos el id de la promo para distinguirlo del producto sin descuento
+      id: `promo-${promo.id}`,
+      name: product.name,
+      price: discountedPrice,
+      unit: product.unit,
+      category: product.category,
+      imageUrl: product.imageUrl,
+      emoji: '🏷️',
+      badge: 'temporada',
+      provider: `Oferta · ${product.unit}`,
+    });
   };
 
   return (
@@ -69,7 +91,7 @@ export default function OffersPage() {
       </div>
 
       {/* ── Offers grid ── */}
-      <div className="px-5 pb-24 lg:px-8 lg:pb-10">
+      <div className="px-5 pb-36 lg:px-8 lg:pb-16">
         {filteredOffers.length === 0 ? (
           <EmptyOffersState
             title={
@@ -105,6 +127,9 @@ export default function OffersPage() {
           </p>
         )}
       </div>
+
+      {/* ── Barra flotante del carrito ── */}
+      <CartPreviewBar />
     </div>
   );
 }
