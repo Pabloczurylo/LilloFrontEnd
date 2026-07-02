@@ -3,19 +3,19 @@ import { InventoryPage } from '../features/inventory';
 import { FinanceDashboardPage } from '../features/finance';
 import { LossPage } from '../features/losses';
 import { SalesPage } from '../features/sales';
+import { OffersPage, AdminPromosPage } from '../features/promotions';
 
 /**
  * AppRouter – Centraliza todas las rutas de la aplicación.
  *
  * Rutas activas:
- *   /inventario  → InventoryPage
- *   /reportes    → FinanceDashboardPage
- *   /mermas      → LossPage
- *   /ventas      → SalesPage
- *   /            → redirect a /reportes (dashboard como home)
- *
- * Rutas placeholder (próximamente):
- *   /ajustes → redirect temporal a /reportes
+ *   /inventario    → InventoryPage
+ *   /reportes      → FinanceDashboardPage
+ *   /mermas        → LossPage
+ *   /ventas        → SalesPage
+ *   /ofertas       → OffersPage       (vista cliente)
+ *   /admin/ofertas → AdminPromosPage  (vista admin)
+ *   /              → redirect a /reportes (dashboard como home)
  */
 export default function AppRouter() {
   return (
@@ -35,11 +35,18 @@ export default function AppRouter() {
       {/* Ventas – Registro de ventas y canasta */}
       <Route path="/ventas" element={<SalesPage />} />
 
+      {/* Ofertas – Vista de cliente con promociones activas */}
+      <Route path="/ofertas" element={<OffersPage />} />
+
+      {/* Admin – Panel de gestión de promociones */}
+      <Route path="/admin/ofertas" element={<AdminPromosPage />} />
+
       {/* Placeholder – redirige al dashboard hasta que se implemente */}
-      <Route path="/ajustes"  element={<Navigate to="/reportes" replace />} />
+      <Route path="/ajustes" element={<Navigate to="/reportes" replace />} />
 
       {/* 404 fallback */}
       <Route path="*" element={<Navigate to="/reportes" replace />} />
     </Routes>
   );
 }
+
