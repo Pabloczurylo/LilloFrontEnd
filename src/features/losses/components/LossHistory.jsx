@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { ClipboardList, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronUp } from 'lucide-react';
 
 const MOTIVO_LABELS = {
   mal_estado: { label: 'Mal estado', emoji: '🥀', color: 'text-orange-700 bg-orange-50 border-orange-200' },
   vencimiento: { label: 'Vencimiento', emoji: '📅', color: 'text-blue-700 bg-blue-50 border-blue-200' },
-  daño_fisico: { label: 'Daño físico', emoji: '🖼️', color: 'text-purple-700 bg-purple-50 border-purple-200' },
+  dano_fisico: { label: 'Daño físico', emoji: '🖼️', color: 'text-purple-700 bg-purple-50 border-purple-200' },
   otro: { label: 'Otro', emoji: '📌', color: 'text-stone-600 bg-stone-50 border-stone-200' },
 };
 
@@ -18,18 +18,23 @@ function formatDate(iso) {
   });
 }
 
-/**
- * LossHistory – Collapsible list of recently registered losses.
- * Sorted newest-first, shows up to 10 entries with a "ver más" toggle.
- */
 export default function LossHistory({ records }) {
   const [expanded, setExpanded] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
   if (!records || records.length === 0) return null;
 
-  const sorted = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
-  const visible = showAll ? sorted : sorted.slice(0, 4);
+  // Los registros del backend vienen ordenados desc por loss_date
+  const visible = showAll ? records : records.slice(0, 5);
+
+  const getCategoryEmoji = (categoryName = '') => {
+    const name = categoryName.toLowerCase();
+    if (name.includes('verdura')) return '🥬';
+    if (name.includes('frut')) return '🍊';
+    if (name.includes('pan')) return '🍞';
+    if (name.includes('lact') || name.includes('láct')) return '🧀';
+    return '📦';
+  };
 
   return (
     <section className="mx-5 mb-6" aria-label="Historial de mermas">
@@ -59,7 +64,7 @@ export default function LossHistory({ records }) {
       {expanded && (
         <div className="flex flex-col gap-2.5">
           {visible.map((record) => {
-            const mInfo = MOTIVO_LABELS[record.motivo] || MOTIVO_LABELS.otro;
+            const mInfo = MOTIVO_LABELS[record.reason] || MOTIVO_LABELS.otro;
             return (
               <div
                 key={record.id}
@@ -69,11 +74,7 @@ export default function LossHistory({ records }) {
                 {/* Left: icon */}
                 <div className="w-10 h-10 rounded-xl bg-stone-50 border border-stone-100
                                 flex items-center justify-center shrink-0 text-xl">
-                  {record.product?.category === 'Frutas' ? '🍊'
-                    : record.product?.category === 'Verduras' ? '🥬'
-                    : record.product?.category === 'Panadería' ? '🍞'
-                    : record.product?.category === 'Lácteos' ? '🧀'
-                    : '📦'}
+                  {getCategoryEmoji(record.product?.category?.name)}
                 </div>
 
                 {/* Center: info */}
@@ -86,7 +87,7 @@ export default function LossHistory({ records }) {
                       {mInfo.emoji} {mInfo.label}
                     </span>
                     <span className="text-[10px] text-stone-400">
-                      {formatDate(record.date)}
+                      {formatDate(record.loss_date)}
                     </span>
                   </div>
                   {record.notes && (
@@ -94,21 +95,28 @@ export default function LossHistory({ records }) {
                       "{record.notes}"
                     </p>
                   )}
+                  {record.reporter?.full_name && (
+                    <p className="text-[9px] text-stone-400 mt-0.5">
+                      Reg: {record.reporter.full_name}
+                    </p>
+                  )}
                 </div>
 
                 {/* Right: quantity */}
                 <div className="text-right shrink-0">
                   <p className="text-sm font-extrabold text-red-600">
-                    -{record.quantity}
+                    -{Number(record.quantity)}
                   </p>
-                  <p className="text-[10px] text-stone-400 font-medium">{record.unit}</p>
+                  <p className="text-[10px] text-stone-400 font-medium">
+                    {record.product?.unit === 'unidad' ? 'UN' : record.product?.unit === 'kg' ? 'KG' : record.product?.unit?.toUpperCase() ?? 'UN'}
+                  </p>
                 </div>
               </div>
             );
           })}
 
           {/* Show more / less */}
-          {sorted.length > 4 && (
+          {records.length > 5 && (
             <button
               type="button"
               id="loss-history-show-more"
@@ -120,7 +128,7 @@ export default function LossHistory({ records }) {
               {showAll ? (
                 <>Mostrar menos <ChevronUp size={13} /></>
               ) : (
-                <>Ver {sorted.length - 4} más <ChevronDown size={13} /></>
+                <>Ver {records.length - 5} más <ChevronDown size={13} /></>
               )}
             </button>
           )}

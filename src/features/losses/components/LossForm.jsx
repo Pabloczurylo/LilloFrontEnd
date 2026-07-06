@@ -1,27 +1,18 @@
-import { useState, useMemo } from 'react';
-import { Search, Trash2, ChevronDown, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { mockProducts } from '../../../utils/mockData';
-
-const UNITS = ['KG', 'UN', 'DOZ'];
+import { useState, useMemo, useEffect } from 'react';
+import { Search, ChevronDown, CheckCircle2, AlertTriangle, Loader } from 'lucide-react';
+import { getProductsAPI } from '../../../services/productsService';
+import { reportLossAPI } from '../../../services/lossesService';
 
 const MOTIVOS = [
   { id: 'mal_estado', label: 'Mal estado', emoji: '🥀' },
   { id: 'vencimiento', label: 'Vencimiento', emoji: '📅' },
-  { id: 'daño_fisico', label: 'Daño físico', emoji: '🖼️' },
+  { id: 'dano_fisico', label: 'Daño físico', emoji: '🖼️' },
   { id: 'otro', label: 'Otro', emoji: '···' },
 ];
 
-/**
- * LossForm – Form to register a merchandise loss (merma).
- * Matches the "Registrar Merma" mockup design with:
- * - Product search + autocomplete
- * - Quantity + unit selector
- * - Reason picker (4 cards)
- * - Optional notes
- * - Submit button with success/error feedback
- */
 export default function LossForm({ onSuccess }) {
   const [search, setSearch] = useState('');
+  const [dbProducts, setDbProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [quantity, setQuantity] = useState('');
@@ -30,18 +21,35 @@ export default function LossForm({ onSuccess }) {
   const [motivo, setMotivo] = useState('mal_estado');
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
+  const [errorMessage, setErrorMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Cargar productos al inicializar
+  useEffect(() => {
+    getProductsAPI()
+      .then((data) => {
+        setDbProducts(data.map(p => ({
+          id: p.id,
+          name: p.name,
+          ref: p.id.substring(0, 8).toUpperCase(),
+          category: p.category?.name ?? 'General',
+          unit: p.unit === 'unidad' ? 'UN' : p.unit === 'kg' ? 'KG' : p.unit?.toUpperCase() ?? 'UN',
+        })));
+      })
+      .catch(err => console.error('Error fetching search products:', err));
+  }, []);
 
   /** Filter products by search text */
   const suggestions = useMemo(() => {
     if (!search.trim() || selectedProduct) return [];
     const q = search.toLowerCase();
-    return mockProducts.filter(
+    return dbProducts.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
         p.ref.toLowerCase().includes(q)
     );
-  }, [search, selectedProduct]);
+  }, [search, selectedProduct, dbProducts]);
 
   const handleSelectProduct = (product) => {
     setSelectedProduct(product);
@@ -56,38 +64,55 @@ export default function LossForm({ onSuccess }) {
     setUnit('KG');
   };
 
-  const isValid = selectedProduct && parseFloat(quantity) > 0 && motivo;
+  const isValid = selectedProduct && parseFloat(quantity) > 0 && motivo && !submitting;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isValid) {
+      setErrorMessage('Completá todos los campos antes de continuar.');
       setStatus('error');
       setTimeout(() => setStatus(null), 3000);
       return;
     }
 
-    const record = {
-      id: Date.now(),
-      product: selectedProduct,
-      quantity: parseFloat(quantity),
-      unit,
-      motivo,
-      notes,
-      date: new Date().toISOString(),
-    };
+    setSubmitting(true);
+    setStatus(null);
 
-    console.log('✅ Merma registrada:', record);
-    onSuccess?.(record);
+    try {
+      await reportLossAPI({
+        product_id: selectedProduct.id,
+        quantity: parseFloat(quantity),
+        reason: motivo, // Enums del backend: mal_estado, vencimiento, dano_fisico, otro
+        notes: notes.trim() || null,
+      });
 
-    // Reset
-    setSelectedProduct(null);
-    setSearch('');
-    setQuantity('');
-    setUnit('KG');
-    setMotivo('mal_estado');
-    setNotes('');
-    setStatus('success');
-    setTimeout(() => setStatus(null), 3500);
+      setStatus('success');
+      onSuccess?.();
+
+      // Reset
+      setSelectedProduct(null);
+      setSearch('');
+      setQuantity('');
+      setUnit('KG');
+      setMotivo('mal_estado');
+      setNotes('');
+      setTimeout(() => setStatus(null), 3500);
+    } catch (err) {
+      console.error('Error reporting loss:', err);
+      setErrorMessage(err.response?.data?.error ?? 'Error al registrar la merma.');
+      setStatus('error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const categoryEmoji = (catName) => {
+    const name = catName.toLowerCase();
+    if (name.includes('verdura')) return '🥬';
+    if (name.includes('frut')) return '🍊';
+    if (name.includes('pan')) return '🍞';
+    if (name.includes('lact') || name.includes('láct')) return '🧀';
+    return '📦';
   };
 
   return (
@@ -110,6 +135,7 @@ export default function LossForm({ onSuccess }) {
         </div>
       )}
 
+      {/* ── Error toast ── */}
       {status === 'error' && (
         <div
           className="mx-5 mb-4 flex items-center gap-3 px-4 py-3.5
@@ -118,7 +144,7 @@ export default function LossForm({ onSuccess }) {
         >
           <AlertTriangle size={18} className="text-red-500 shrink-0" />
           <p className="text-sm font-semibold text-red-700">
-            Completá todos los campos antes de continuar.
+            {errorMessage || 'Completá todos los campos antes de continuar.'}
           </p>
         </div>
       )}
@@ -149,7 +175,7 @@ export default function LossForm({ onSuccess }) {
                 setShowSuggestions(true);
               }}
               onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 180)}
               placeholder="Buscar tomate, lechuga..."
               className="w-full pl-10 pr-10 py-3 text-sm text-stone-700
                          placeholder:text-stone-400 bg-stone-50 border border-stone-200
@@ -172,7 +198,7 @@ export default function LossForm({ onSuccess }) {
             {showSuggestions && suggestions.length > 0 && (
               <ul
                 className="absolute z-20 top-full mt-1 w-full bg-white border
-                           border-stone-200 rounded-xl shadow-lg overflow-hidden"
+                           border-stone-200 rounded-xl shadow-lg overflow-hidden max-h-60 overflow-y-auto"
               >
                 {suggestions.map((p) => (
                   <li key={p.id}>
@@ -183,11 +209,7 @@ export default function LossForm({ onSuccess }) {
                                  text-stone-700 hover:bg-stone-50 transition-colors text-left cursor-pointer"
                     >
                       <span className="text-lg leading-none">
-                        {p.category === 'Frutas' ? '🍊'
-                          : p.category === 'Verduras' ? '🥬'
-                          : p.category === 'Panadería' ? '🍞'
-                          : p.category === 'Lácteos' ? '🧀'
-                          : '📦'}
+                        {categoryEmoji(p.category)}
                       </span>
                       <span>
                         <span className="font-semibold">{p.name}</span>
@@ -206,11 +228,7 @@ export default function LossForm({ onSuccess }) {
             <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200
                             rounded-xl px-3.5 py-2.5">
               <span className="text-base leading-none">
-                {selectedProduct.category === 'Frutas' ? '🍊'
-                  : selectedProduct.category === 'Verduras' ? '🥬'
-                  : selectedProduct.category === 'Panadería' ? '🍞'
-                  : selectedProduct.category === 'Lácteos' ? '🧀'
-                  : '📦'}
+                {categoryEmoji(selectedProduct.category)}
               </span>
               <div>
                 <p className="text-xs font-bold text-green-900">{selectedProduct.name}</p>
@@ -250,42 +268,17 @@ export default function LossForm({ onSuccess }) {
                          rounded-xl outline-none focus:border-green-700
                          focus:ring-2 focus:ring-green-700/20 transition-all"
             />
-            {/* Unit selector */}
+            {/* Unit selector (locked to product unit for precision) */}
             <div className="relative">
               <button
                 type="button"
-                id="unit-selector"
-                onClick={() => setShowUnitMenu((v) => !v)}
-                className="flex items-center gap-2 px-4 py-3 bg-stone-50 border
-                           border-stone-200 rounded-xl text-sm font-semibold text-stone-700
-                           hover:bg-stone-100 transition-colors cursor-pointer min-w-[80px]
-                           justify-between"
+                disabled
+                className="flex items-center gap-2 px-4 py-3 bg-stone-100 border
+                           border-stone-200 rounded-xl text-sm font-semibold text-stone-400
+                           min-w-[80px] justify-between cursor-not-allowed"
               >
                 {unit}
-                <ChevronDown size={14} className={`transition-transform ${showUnitMenu ? 'rotate-180' : ''}`} />
               </button>
-              {showUnitMenu && (
-                <ul
-                  className="absolute z-20 right-0 top-full mt-1 w-28 bg-white border
-                             border-stone-200 rounded-xl shadow-lg overflow-hidden"
-                >
-                  {UNITS.map((u) => (
-                    <li key={u}>
-                      <button
-                        type="button"
-                        onClick={() => { setUnit(u); setShowUnitMenu(false); }}
-                        className={`w-full px-4 py-2.5 text-sm text-left cursor-pointer transition-colors
-                          ${u === unit
-                            ? 'bg-green-50 text-green-900 font-semibold'
-                            : 'text-stone-700 hover:bg-stone-50'
-                          }`}
-                      >
-                        {u}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
           </div>
         </div>
@@ -356,6 +349,7 @@ export default function LossForm({ onSuccess }) {
         <button
           id="register-loss-btn"
           type="submit"
+          disabled={!isValid || submitting}
           className={`flex items-center justify-center gap-2.5 w-full py-4 px-5
                      font-semibold text-base rounded-2xl transition-all shadow-md
                      cursor-pointer
@@ -364,7 +358,11 @@ export default function LossForm({ onSuccess }) {
                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                      }`}
         >
-          <Trash2 size={18} />
+          {submitting ? (
+            <span className="w-5 h-5 border-2 border-stone-400 border-t-stone-800 rounded-full animate-spin" />
+          ) : (
+            <Trash2 size={18} />
+          )}
           Registrar Pérdida
         </button>
       </div>

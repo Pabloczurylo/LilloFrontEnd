@@ -4,7 +4,8 @@ const fmt = (n) =>
   new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(n);
 
 /**
@@ -19,12 +20,14 @@ export default function BalanceCard({ balance, onAgregarMovimiento, onMetricas }
     >
       {/* Label */}
       <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-        Balance Total del Día
+        Balance Total del Día ({balance.fecha})
       </p>
 
       {/* Amount */}
-      <p className="text-4xl font-extrabold text-stone-900 leading-none tracking-tight">
-        {fmt(balance.total)}
+      <p className={`text-4xl font-extrabold leading-none tracking-tight ${
+        balance.neto >= 0 ? 'text-stone-900' : 'text-red-600'
+      }`}>
+        {fmt(balance.neto)}
       </p>
 
       {/* Actions */}
@@ -39,18 +42,6 @@ export default function BalanceCard({ balance, onAgregarMovimiento, onMetricas }
         >
           <span className="text-base leading-none">+</span>
           Agregar Movimiento
-        </button>
-
-        <button
-          id="metricas-btn"
-          onClick={onMetricas}
-          className="flex items-center justify-center gap-2 w-full py-3 px-5
-                     bg-transparent hover:bg-green-50
-                     text-green-800 font-semibold text-sm rounded-2xl
-                     border-2 border-green-800 transition-colors cursor-pointer"
-        >
-          <TrendingUp size={16} strokeWidth={2} />
-          Métricas Mensuales
         </button>
       </div>
 
@@ -78,7 +69,7 @@ export default function BalanceCard({ balance, onAgregarMovimiento, onMetricas }
             </span>
           </div>
           <p className="text-xl font-extrabold text-stone-900 leading-none">
-            {fmt(balance.gastos)}
+            {fmt(balance.egresos)}
           </p>
         </div>
       </div>

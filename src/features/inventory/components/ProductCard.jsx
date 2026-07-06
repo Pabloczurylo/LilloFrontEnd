@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, EyeOff } from 'lucide-react';
 
 /**
  * ProductCard – Displays a single product in the inventory list.
@@ -6,7 +6,7 @@ import { Pencil, Trash2 } from 'lucide-react';
  * category badge, price, unit, and edit/delete action buttons.
  */
 export default function ProductCard({ product, onEdit, onDelete }) {
-  const { id, name, ref, price, category, unit, imageUrl } = product;
+  const { id, name, ref, price, category, unit, imageUrl, is_active } = product;
 
   /** Map category names to Tailwind badge colour classes */
   const categoryColors = {
@@ -23,30 +23,38 @@ export default function ProductCard({ product, onEdit, onDelete }) {
   const formattedPrice = new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(price);
 
   return (
     <article
       id={`product-card-${id}`}
-      className="flex items-start gap-4 bg-white rounded-2xl p-4 shadow-sm
-                 border border-stone-100 transition-shadow hover:shadow-md"
+      className={`flex items-start gap-4 bg-white rounded-2xl p-4 shadow-sm
+                  border transition-shadow hover:shadow-md ${
+                    is_active ? 'border-stone-100' : 'border-red-100 opacity-60 bg-stone-50'
+                  }`}
     >
       {/* Product image */}
-      <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-stone-100">
+      <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-stone-100 relative">
         <img
           src={imageUrl}
           alt={name}
           className="w-full h-full object-cover"
           loading="lazy"
         />
+        {!is_active && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white">
+            <EyeOff size={16} />
+          </div>
+        )}
       </div>
 
       {/* Info block */}
       <div className="flex-1 min-w-0">
         {/* Name & ref */}
         <h3 className="text-base font-semibold text-stone-900 leading-tight truncate">
-          {name}
+          {name} {!is_active && <span className="text-xs text-red-500 font-bold">(Inactivo)</span>}
         </h3>
         <p className="text-xs text-stone-400 mt-0.5">Ref: {ref}</p>
 
@@ -80,16 +88,18 @@ export default function ProductCard({ product, onEdit, onDelete }) {
           <Pencil size={16} />
         </button>
 
-        <button
-          id={`delete-product-${id}`}
-          onClick={() => onDelete?.(id)}
-          className="w-9 h-9 flex items-center justify-center rounded-xl
-                     bg-red-50 text-red-500 hover:bg-red-600 hover:text-white
-                     transition-colors cursor-pointer"
-          aria-label={`Eliminar ${name}`}
-        >
-          <Trash2 size={16} />
-        </button>
+        {is_active && (
+          <button
+            id={`delete-product-${id}`}
+            onClick={() => onDelete?.(id)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl
+                       bg-red-50 text-red-500 hover:bg-red-600 hover:text-white
+                       transition-colors cursor-pointer"
+            aria-label={`Eliminar ${name}`}
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
       </div>
     </article>
   );
