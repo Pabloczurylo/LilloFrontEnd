@@ -1,4 +1,4 @@
-import { OFFER_CATEGORIES } from '../utils/promotionsMockData';
+import { OFFER_CATEGORIES } from '../utils/promotionsUtils';
 
 /**
  * CategoryFilterBar – Barra de filtros de categoría con scroll horizontal.

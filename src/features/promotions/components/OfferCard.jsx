@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Check } from 'lucide-react';
 import PromoBadge from './PromoBadge';
-import { applyDiscount } from '../utils/promotionsMockData';
+import { applyDiscount } from '../utils/promotionsUtils';
 
 /**
  * Emoji por categoría de producto (consistente con el resto del proyecto).

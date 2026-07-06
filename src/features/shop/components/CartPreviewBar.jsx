@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../../../context/CartContext';
-import { fmtPrice } from '../utils/shopMockData';
+import { fmtPrice } from '../utils/shopUtils';
 
 /**
  * CartPreviewBar – Barra flotante sticky en el fondo que aparece cuando

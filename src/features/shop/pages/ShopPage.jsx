@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Leaf, ChevronDown } from 'lucide-react';
-import { shopProducts, SHOP_CATEGORIES } from '../utils/shopMockData';
+import { Leaf, ChevronDown, RefreshCw, AlertCircle } from 'lucide-react';
+import { useProducts } from '../hooks/useProducts';
 import ShopProductCard from '../components/ShopProductCard';
 import CartPreviewBar from '../components/CartPreviewBar';
 
@@ -8,23 +8,72 @@ import CartPreviewBar from '../components/CartPreviewBar';
  * ShopPage – Vista catálogo de productos para clientes.
  * Ruta: /pedido
  *
+ * Carga productos reales desde la API (GET /api/products).
+ * Las categorías se generan dinámicamente desde la BD.
+ *
  * Responsive:
  *  - Mobile  (<1024px): 1 columna, scroll vertical
- *  - Desktop (≥1024px): grid 2–3 columnas
+ *  - Desktop (≥1024px): grid 2–4 columnas
  */
 export default function ShopPage() {
+  const { products, categories, loading, error, refetch } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState('Todos los productos');
   const [filterOpen, setFilterOpen] = useState(false);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'Todos los productos') return shopProducts;
-    return shopProducts.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory]);
+    if (selectedCategory === 'Todos los productos') return products;
+    return products.filter((p) => p.category === selectedCategory);
+  }, [selectedCategory, products]);
 
   const handleSelectCategory = (cat) => {
     setSelectedCategory(cat);
     setFilterOpen(false);
   };
+
+  // ── Estado de carga ─────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-4"
+        style={{ background: '#faf8f5' }}
+      >
+        <span
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            border: '3px solid #d1d5db',
+            borderTopColor: '#2d7d2d',
+            animation: 'spin 0.8s linear infinite',
+            display: 'block',
+          }}
+        />
+        <p className="text-sm font-semibold text-stone-400">Cargando productos…</p>
+      </div>
+    );
+  }
+
+  // ── Estado de error ─────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-4 px-6"
+        style={{ background: '#faf8f5' }}
+      >
+        <AlertCircle size={40} style={{ color: '#ef4444' }} />
+        <p className="text-base font-bold text-stone-700 text-center">{error}</p>
+        <button
+          type="button"
+          onClick={refetch}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white cursor-pointer transition-opacity hover:opacity-90"
+          style={{ background: '#2d7d2d' }}
+        >
+          <RefreshCw size={15} />
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative" style={{ background: '#faf8f5' }}>
@@ -95,7 +144,7 @@ export default function ShopPage() {
               animation: 'fadeIn 0.15s ease',
             }}
           >
-            {SHOP_CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <li key={cat}>
                 <button
                   type="button"

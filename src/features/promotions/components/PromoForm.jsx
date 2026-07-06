@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Search, CheckCircle2, AlertTriangle, Megaphone } from 'lucide-react';
 import { mockProducts } from '../../../utils/mockData';
-import { applyDiscount } from '../utils/promotionsMockData';
+import { applyDiscount } from '../utils/promotionsUtils';
 
 /**
  * PromoForm – Formulario para crear una nueva promoción.

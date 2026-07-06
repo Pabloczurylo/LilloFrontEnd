@@ -1,6 +1,6 @@
 import { Trash2 } from 'lucide-react';
 import PromoBadge from './PromoBadge';
-import { applyDiscount } from '../utils/promotionsMockData';
+import { applyDiscount } from '../utils/promotionsUtils';
 
 /**
  * PromoListItem – Fila de la lista de promos en el panel admin.

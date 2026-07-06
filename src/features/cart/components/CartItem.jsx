@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '../../../context/CartContext';
-import { fmtPrice, BADGE_STYLES, CARD_BG_COLORS } from '../../shop/utils/shopMockData';
+import { fmtPrice, BADGE_STYLES, CARD_BG_COLORS } from '../../shop/utils/shopUtils';
 
 /**
  * CartItem – Fila de ítem en la vista de resumen del pedido.
