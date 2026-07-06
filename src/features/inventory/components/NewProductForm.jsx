@@ -1,20 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, ArrowLeft } from 'lucide-react';
 
-const CATEGORIES = ['Verduras', 'Frutas', 'Panadería', 'Almacén', 'Lácteos'];
 const UNITS = ['UN', 'KG'];
 
 /**
- * NewProductForm – Form for creating a new product.
- * Matches the "Nuevo Producto" mockup (Imagen 4).
+ * NewProductForm – Form for creating or editing a product.
+ * Matches the "Nuevo Producto" mockup.
  */
-export default function NewProductForm({ onSave, onCancel }) {
+export default function NewProductForm({ product, categories = [], onSave, onCancel }) {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    category: '',
+    category_id: '',
     unit: 'UN',
+    imageUrl: '',
+    description: '',
+    stock: 0
   });
+
+  // Si se pasa un producto para editar, inicializar el formulario con sus datos
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || '',
+        price: product.price || '',
+        category_id: product.category_id || '',
+        unit: product.unit || 'UN',
+        imageUrl: product.imageUrl || '',
+        description: product.description || '',
+        stock: product.stock || 0
+      });
+    }
+  }, [product]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -22,19 +39,28 @@ export default function NewProductForm({ onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.name || !formData.price || !formData.category_id) {
+      alert('Por favor completa los campos requeridos (Nombre, Precio y Categoría)');
+      return;
+    }
     onSave?.({
       ...formData,
       price: parseFloat(formData.price) || 0,
+      stock: parseFloat(formData.stock) || 0,
     });
   };
 
-  /** Map category to an emoji icon */
-  const categoryIcons = {
-    Verduras: '🥬',
-    Frutas: '🍊',
-    Panadería: '🍞',
-    Almacén: '🫒',
-    Lácteos: '🧀',
+  /** Map category name to emoji */
+  const getCategoryEmoji = (catId) => {
+    const cat = categories.find((c) => c.id === catId);
+    if (!cat) return '📦';
+    const name = cat.name.toLowerCase();
+    if (name.includes('verdura')) return '🥬';
+    if (name.includes('frut')) return '🍊';
+    if (name.includes('pan')) return '🍞';
+    if (name.includes('lact') || name.includes('láct')) return '🧀';
+    if (name.includes('almacen') || name.includes('almacén')) return '🫒';
+    return '📦';
   };
 
   return (
@@ -49,11 +75,12 @@ export default function NewProductForm({ onSave, onCancel }) {
           Administración
         </p>
         <h1 className="text-3xl font-extrabold text-black mt-2 leading-tight">
-          Nuevo Producto
+          {product ? 'Editar Producto' : 'Nuevo Producto'}
         </h1>
         <p className="text-sm text-stone-400 mt-2 leading-relaxed">
-          Agrega nuevos artículos a tu catálogo con la frescura y calidad de
-          siempre.
+          {product 
+            ? 'Modifica las características y el precio del artículo de tu catálogo.'
+            : 'Agrega nuevos artículos a tu catálogo con la frescura y calidad de siempre.'}
         </p>
       </div>
 
@@ -66,17 +93,14 @@ export default function NewProductForm({ onSave, onCancel }) {
           </label>
           <div className="mt-2 flex items-center gap-4 bg-stone-50 rounded-xl p-4 border border-stone-100">
             <span className="text-3xl">
-              {formData.category
-                ? categoryIcons[formData.category] || '📦'
-                : '📦'}
+              {formData.category_id ? getCategoryEmoji(formData.category_id) : '📦'}
             </span>
             <div>
               <p className="text-sm font-semibold text-stone-700">
                 Asignado por categoría
               </p>
               <p className="text-xs text-stone-400 mt-0.5">
-                El sistema asignará automáticamente un ícono basado en la
-                categoría seleccionada.
+                El sistema asignará automáticamente un ícono basado en la categoría seleccionada.
               </p>
             </div>
           </div>
@@ -88,11 +112,12 @@ export default function NewProductForm({ onSave, onCancel }) {
             htmlFor="product-name"
             className="text-xs font-bold uppercase tracking-wider text-stone-500"
           >
-            Nombre del Producto
+            Nombre del Producto *
           </label>
           <input
             id="product-name"
             type="text"
+            required
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
             placeholder="Ej. Tomate Cherry Orgánico"
@@ -109,7 +134,7 @@ export default function NewProductForm({ onSave, onCancel }) {
             htmlFor="product-price"
             className="text-xs font-bold uppercase tracking-wider text-stone-500"
           >
-            Precio de Venta
+            Precio de Venta *
           </label>
           <div className="relative mt-2">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-stone-500">
@@ -120,6 +145,7 @@ export default function NewProductForm({ onSave, onCancel }) {
               type="number"
               min="0"
               step="0.01"
+              required
               value={formData.price}
               onChange={(e) => handleChange('price', e.target.value)}
               placeholder="0.00"
@@ -131,30 +157,75 @@ export default function NewProductForm({ onSave, onCancel }) {
           </div>
         </div>
 
+        {/* Current Stock */}
+        <div>
+          <label
+            htmlFor="product-stock"
+            className="text-xs font-bold uppercase tracking-wider text-stone-500"
+          >
+            Stock Inicial / Actual
+          </label>
+          <input
+            id="product-stock"
+            type="number"
+            min="0"
+            step="0.001"
+            value={formData.stock}
+            onChange={(e) => handleChange('stock', e.target.value)}
+            placeholder="0"
+            className="mt-2 w-full px-4 py-3 text-sm text-stone-700
+                       placeholder:text-stone-400 bg-stone-50 border border-stone-200
+                       rounded-xl outline-none focus:border-green-700
+                       focus:ring-2 focus:ring-green-700/20 transition-all"
+          />
+        </div>
+
         {/* Category select */}
         <div>
           <label
             htmlFor="product-category"
             className="text-xs font-bold uppercase tracking-wider text-stone-500"
           >
-            Categoría
+            Categoría *
           </label>
           <select
             id="product-category"
-            value={formData.category}
-            onChange={(e) => handleChange('category', e.target.value)}
+            required
+            value={formData.category_id}
+            onChange={(e) => handleChange('category_id', e.target.value)}
             className="mt-2 w-full px-4 py-3 text-sm text-stone-700
                        bg-stone-50 border border-stone-200 rounded-xl
                        outline-none focus:border-green-700 appearance-none
                        focus:ring-2 focus:ring-green-700/20 transition-all cursor-pointer"
           >
             <option value="">Seleccionar...</option>
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Image URL */}
+        <div>
+          <label
+            htmlFor="product-image"
+            className="text-xs font-bold uppercase tracking-wider text-stone-500"
+          >
+            URL de la Imagen (Opcional)
+          </label>
+          <input
+            id="product-image"
+            type="url"
+            value={formData.imageUrl}
+            onChange={(e) => handleChange('imageUrl', e.target.value)}
+            placeholder="https://images.unsplash.com/..."
+            className="mt-2 w-full px-4 py-3 text-sm text-stone-700
+                       placeholder:text-stone-400 bg-stone-50 border border-stone-200
+                       rounded-xl outline-none focus:border-green-700
+                       focus:ring-2 focus:ring-green-700/20 transition-all"
+          />
         </div>
 
         {/* Unit toggle */}
@@ -193,7 +264,7 @@ export default function NewProductForm({ onSave, onCancel }) {
                      transition-colors shadow-md cursor-pointer"
         >
           <Save size={18} />
-          Guardar Producto
+          {product ? 'Actualizar Producto' : 'Guardar Producto'}
         </button>
 
         <button

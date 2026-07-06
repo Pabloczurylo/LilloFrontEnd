@@ -1,20 +1,69 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { getLossesAPI } from '../../../services/lossesService';
 import LossForm from '../components/LossForm';
 import LossHistory from '../components/LossHistory';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 /**
  * LossPage – Feature page for registering merchandise losses (mermas).
  *
- * Responsive layout:
- *  - Mobile  (<1024px): single column, form on top, history below.
- *  - Desktop (≥1024px): two-column grid (form left, history right).
+ * Conectada al backend (GET /api/inventory/losses y POST /api/inventory/losses).
  */
 export default function LossPage() {
   const [lossRecords, setLossRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleNewRecord = (record) => {
-    setLossRecords((prev) => [record, ...prev]);
+  const loadLosses = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getLossesAPI();
+      setLossRecords(data);
+    } catch (err) {
+      console.error('Error loading losses:', err);
+      setError('No se pudo cargar el historial de mermas. Asegurate de estar autenticado.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLosses();
+  }, [loadLosses]);
+
+  const handleNewRecord = () => {
+    // Al registrar una nueva merma, recargamos el historial completo para sincronizar
+    loadLosses();
   };
+
+  /* ---- Loading State ---- */
+  if (loading && lossRecords.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#faf8f5]">
+        <span className="w-10 h-10 rounded-full border-3 border-stone-200 border-t-green-800 animate-spin" />
+        <p className="text-sm font-semibold text-stone-400">Cargando mermas…</p>
+      </div>
+    );
+  }
+
+  /* ---- Error State ---- */
+  if (error && lossRecords.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 bg-[#faf8f5]">
+        <AlertCircle size={40} className="text-red-500" />
+        <p className="text-base font-bold text-stone-700 text-center">{error}</p>
+        <button
+          type="button"
+          onClick={loadLosses}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-green-900 cursor-pointer hover:bg-green-800"
+        >
+          <RefreshCw size={15} />
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">

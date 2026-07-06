@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Flame } from 'lucide-react';
 import { usePromotions } from '../../../context/PromotionsContext';
 import { useCart } from '../../../context/CartContext';
-import { applyDiscount } from '../utils/promotionsMockData';
+import { applyDiscount } from '../utils/promotionsUtils';
 import CategoryFilterBar from '../components/CategoryFilterBar';
 import OfferCard from '../components/OfferCard';
 import EmptyOffersState from '../components/EmptyOffersState';

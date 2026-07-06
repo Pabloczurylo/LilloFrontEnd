@@ -1,5 +1,5 @@
 import { useCart } from '../../../context/CartContext';
-import { fmtPrice } from '../../shop/utils/shopMockData';
+import { fmtPrice } from '../../shop/utils/shopUtils';
 import { MessageCircle } from 'lucide-react';
 
 /** Número de WhatsApp del negocio (sin espacios ni +) */

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { useCart } from '../../../context/CartContext';
-import { BADGE_STYLES, CARD_BG_COLORS, fmtPrice } from '../utils/shopMockData';
+import { BADGE_STYLES, CARD_BG_COLORS, fmtPrice } from '../utils/shopUtils';
 
 /**
  * ShopProductCard – Tarjeta vertical para el catálogo de pedidos.
@@ -55,6 +55,17 @@ export default function ShopProductCard({ product }) {
         className="relative w-full overflow-hidden"
         style={{ background: cardBg, height: '160px' }}
       >
+        {/* Badge de descuento (si hay promo activa) */}
+        {product.hasDiscount && (
+          <div
+            className="absolute top-3 right-3 z-10 flex items-center gap-1
+                       px-2 py-1 rounded-full text-[10px] font-extrabold"
+            style={{ background: '#ef4444', color: '#ffffff' }}
+          >
+            -{product.discountPct}%
+          </div>
+        )}
+
         {/* Badge tipo */}
         {badge && (
           <div
@@ -111,6 +122,14 @@ export default function ShopProductCard({ product }) {
             style={{ color: '#1a5c1a' }}
           >
             {fmtPrice(product.price)}
+            {product.originalPrice && (
+              <span
+                className="block text-[11px] font-semibold line-through"
+                style={{ color: '#9ca3af' }}
+              >
+                {fmtPrice(product.originalPrice)}
+              </span>
+            )}
           </p>
         </div>
 

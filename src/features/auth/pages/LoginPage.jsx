@@ -22,7 +22,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState('');
+  const [mail, setMail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -36,10 +36,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Pequeño delay artificial para que el botón no sea instantáneo
-    await new Promise((r) => setTimeout(r, 400));
-
-    const result = login(email, password);
+    const result = await login(mail, password);
     setLoading(false);
 
     if (result.ok) {
@@ -107,12 +104,12 @@ export default function LoginPage() {
               >
                 <Mail size={16} strokeWidth={1.8} style={{ color: '#9ca3af', shrink: 0 }} />
                 <input
-                  id="login-email"
+                  id="login-mail"
                   type="email"
                   autoComplete="email"
                   placeholder="tu@correo.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                  value={mail}
+                  onChange={(e) => { setMail(e.target.value); setError(''); }}
                   required
                   className="flex-1 bg-transparent text-sm text-stone-800 placeholder-stone-400
                              outline-none font-medium"
@@ -188,7 +185,7 @@ export default function LoginPage() {
             <button
               id="login-submit-btn"
               type="submit"
-              disabled={loading || !email || !password}
+              disabled={loading || !mail || !password}
               className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl
                          text-white font-extrabold text-[15px] cursor-pointer
                          transition-all hover:opacity-95 active:scale-[0.98]

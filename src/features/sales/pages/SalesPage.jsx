@@ -1,81 +1,140 @@
-import { useState } from 'react';
-import { Settings, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Settings, CheckCircle2, RefreshCw, AlertCircle } from 'lucide-react';
 import SalesBasket from '../components/SalesBasket';
 import SalesSummaryBar from '../components/SalesSummaryBar';
 import AddProductModal from '../components/AddProductModal';
 import SalesHistory from '../components/SalesHistory';
-import { mockSalesHistory, generateSaleId } from '../utils/salesMockData';
+import { getSalesAPI, createSaleAPI } from '../../../services/salesService';
 
-/**
- * SalesPage – Página principal del módulo de Ventas.
- *
- * Responsive layout:
- *  - Mobile  (<1024px): tabs "Venta Actual" / "Historial"
- *                       SalesSummaryBar fija arriba del BottomNav
- *  - Desktop (≥1024px): 2 columnas – canasta izquierda, historial derecha
- */
 export default function SalesPage() {
-  // ── Basket state ──
   const [basketItems, setBasketItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
-
-  // ── History state ──
-  const [salesHistory, setSalesHistory] = useState(mockSalesHistory);
-
-  // ── Mobile tab ──
+  const [salesHistory, setSalesHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [activeTab, setActiveTab] = useState('basket'); // 'basket' | 'history'
-
-  // ── Success flash ──
   const [successFlash, setSuccessFlash] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Computed
   const basketTotal = basketItems.reduce((sum, it) => sum + it.total, 0);
 
-  // ── Handlers ──
+  const loadSales = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getSalesAPI();
+      
+      // Mapeamos el formato de la API al formato local del historial visual
+      setSalesHistory(data.map(sale => ({
+        id: sale.id,
+        customerName: sale.seller?.full_name ?? 'Venta rápida',
+        items: sale.items.map(it => ({
+          name: it.product?.name ?? 'Producto',
+          quantity: Number(it.quantity),
+          unit: it.product?.unit === 'unidad' ? 'UN' : 'KG',
+          unitPrice: Number(it.unit_price_at_sale),
+        })),
+        total: Number(sale.total_amount),
+        status: sale.status === 'completada' ? 'completado' : 'pendiente',
+        time: sale.sale_date,
+      })));
+    } catch (err) {
+      console.error('Error fetching sales history:', err);
+      setError('No se pudo cargar el historial de ventas.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSales();
+  }, [loadSales]);
+
   const handleAddItem = (item) => {
-    setBasketItems((prev) => [...prev, item]);
+    // Si ya existe en la canasta, sumamos cantidad
+    setBasketItems((prev) => {
+      const existing = prev.find((it) => it.id === item.id);
+      if (existing) {
+        return prev.map((it) =>
+          it.id === item.id
+            ? { ...it, quantity: it.quantity + item.quantity, total: (it.quantity + item.quantity) * it.unitPrice }
+            : it
+        );
+      }
+      return [...prev, item];
+    });
   };
 
   const handleRemoveItem = (id) => {
     setBasketItems((prev) => prev.filter((it) => it.id !== id));
   };
 
-  const handleRegisterSale = () => {
-    if (basketItems.length === 0) return;
+  const handleRegisterSale = async () => {
+    if (basketItems.length === 0 || submitting) return;
 
-    const newSale = {
-      id: generateSaleId(),
-      customerName: 'Cliente general',
-      items: basketItems.map((it) => ({
-        name: it.name,
-        quantity: it.quantity,
-        unit: it.unit,
-        unitPrice: it.unitPrice,
-      })),
-      total: basketTotal,
-      status: 'completado',
-      time: new Date().toISOString(),
-    };
+    setSubmitting(true);
+    try {
+      await createSaleAPI({
+        payment_method: 'efectivo', // Valor por defecto
+        items: basketItems.map((it) => ({
+          product_id: it.id, // ID UUID de producto
+          quantity: it.quantity,
+        })),
+      });
 
-    setSalesHistory((prev) => [newSale, ...prev]);
-    setBasketItems([]);
+      setBasketItems([]);
+      setSuccessFlash(true);
+      setTimeout(() => setSuccessFlash(false), 3500);
 
-    // Mostrar flash de éxito y cambiar a tab historial en mobile
-    setSuccessFlash(true);
-    setTimeout(() => setSuccessFlash(false), 3500);
-    setActiveTab('history');
+      // Recargar historial completo
+      await loadSales();
+      setActiveTab('history');
+    } catch (err) {
+      console.error('Error registering sale:', err);
+      alert('Error al registrar la venta: ' + (err.response?.data?.error ?? err.message));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleStatusChange = (id, newStatus) => {
+    // Las ventas son completadas directo por el backend en este flujo, se simula localmente si cambian
     setSalesHistory((prev) =>
       prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
   };
 
-  // ── Render ──
+  /* ---- Loading State ---- */
+  if (loading && salesHistory.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#faf8f5]">
+        <span className="w-10 h-10 rounded-full border-3 border-stone-200 border-t-green-800 animate-spin" />
+        <p className="text-sm font-semibold text-stone-400">Cargando ventas y POS…</p>
+      </div>
+    );
+  }
+
+  /* ---- Error State ---- */
+  if (error && salesHistory.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 bg-[#faf8f5]">
+        <AlertCircle size={40} className="text-red-500" />
+        <p className="text-base font-bold text-stone-700 text-center">{error}</p>
+        <button
+          type="button"
+          onClick={loadSales}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-green-900 cursor-pointer hover:bg-green-800"
+        >
+          <RefreshCw size={15} />
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#faf8f5]">
-
       {/* ── Page header ── */}
       <div className="px-5 pt-6 pb-4 lg:px-8 lg:pt-8 flex items-start justify-between">
         <div>
@@ -89,7 +148,6 @@ export default function SalesPage() {
             Agregá productos, revisá el total y registrá la venta.
           </p>
         </div>
-        {/* Badge Caja Activa */}
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl
                         bg-orange-50 border border-orange-200 text-orange-700 shrink-0 mt-1">
           <Settings size={12} strokeWidth={2} />
@@ -163,12 +221,7 @@ export default function SalesPage() {
       <div className="lg:grid lg:grid-cols-[1fr_420px] lg:gap-6 lg:px-8 lg:pb-10">
 
         {/* ── LEFT: Canasta ── */}
-        {/* Mobile: visible solo en tab 'basket' */}
-        {/* Desktop: siempre visible */}
-        <div
-          className={`${activeTab === 'basket' ? 'block' : 'hidden'} lg:block`}
-        >
-          {/* Agregar espacio extra en mobile para el SalesSummaryBar fijo */}
+        <div className={`${activeTab === 'basket' ? 'block' : 'hidden'} lg:block`}>
           <div className="pb-[10rem] lg:pb-0">
             <SalesBasket
               items={basketItems}
@@ -181,19 +234,14 @@ export default function SalesPage() {
                 total={basketTotal}
                 itemCount={basketItems.length}
                 onConfirm={handleRegisterSale}
-                disabled={basketItems.length === 0}
+                disabled={basketItems.length === 0 || submitting}
               />
             </div>
           </div>
         </div>
 
         {/* ── RIGHT: Historial ── */}
-        {/* Mobile: visible solo en tab 'history' */}
-        {/* Desktop: siempre visible */}
-        <div
-          className={`px-5 lg:px-0 pb-8 lg:pb-0
-                      ${activeTab === 'history' ? 'block' : 'hidden'} lg:block`}
-        >
+        <div className={`px-5 lg:px-0 pb-8 lg:pb-0 ${activeTab === 'history' ? 'block' : 'hidden'} lg:block`}>
           <SalesHistory
             sales={salesHistory}
             onStatusChange={handleStatusChange}
@@ -201,17 +249,17 @@ export default function SalesPage() {
         </div>
       </div>
 
-      {/* ── Mobile fixed SalesSummaryBar (shown only in basket tab) ── */}
+      {/* ── Mobile fixed SalesSummaryBar ── */}
       {activeTab === 'basket' && (
         <SalesSummaryBar
           total={basketTotal}
           itemCount={basketItems.length}
           onConfirm={handleRegisterSale}
-          disabled={basketItems.length === 0}
+          disabled={basketItems.length === 0 || submitting}
         />
       )}
 
-      {/* ── Add Product Modal ── */}
+      {/* Add Product Modal */}
       <AddProductModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
