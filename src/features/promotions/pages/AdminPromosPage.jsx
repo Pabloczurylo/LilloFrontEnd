@@ -1,24 +1,44 @@
-import { BadgePercent, Eye } from 'lucide-react';
+import { BadgePercent, Eye, RefreshCw, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePromotions } from '../../../context/PromotionsContext';
 import PromoForm from '../components/PromoForm';
 import PromoListItem from '../components/PromoListItem';
 import EmptyOffersState from '../components/EmptyOffersState';
 
-/**
- * AdminPromosPage – Panel de administración de promociones.
- * Ruta: /admin/ofertas
- *
- * Responsive:
- *  - Mobile  (<1024px): formulario arriba, lista de promos debajo.
- *  - Desktop (≥1024px): 2 columnas – form izquierda (sticky), lista derecha.
- */
 export default function AdminPromosPage() {
-  const { promotions, addPromotion, togglePromotion, removePromotion } =
+  const { promotions, loading, error, addPromotion, togglePromotion, removePromotion, refetch } =
     usePromotions();
   const navigate = useNavigate();
 
-  const activeCount = promotions.filter((p) => p.active).length;
+  const activeCount = promotions.filter((p) => p.is_active).length;
+
+  /* ---- Loading State ---- */
+  if (loading && promotions.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#faf8f5]">
+        <span className="w-10 h-10 rounded-full border-3 border-stone-200 border-t-green-800 animate-spin" />
+        <p className="text-sm font-semibold text-stone-400">Cargando ofertas y promociones…</p>
+      </div>
+    );
+  }
+
+  /* ---- Error State ---- */
+  if (error && promotions.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 bg-[#faf8f5]">
+        <AlertCircle size={40} className="text-red-500" />
+        <p className="text-base font-bold text-stone-700 text-center">{error}</p>
+        <button
+          type="button"
+          onClick={refetch}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-green-900 cursor-pointer hover:bg-green-800"
+        >
+          <RefreshCw size={15} />
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">
